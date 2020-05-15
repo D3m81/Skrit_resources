@@ -1,0 +1,24 @@
+options:
+	Script_Priority: 1 				#This will make is so that scripts with a higher Priority will override this one
+	Enable_Chat_Raduis: false		#This will make it so that only player in a certain radius can recieve messages
+	Chat_Raduis: 10	
+	Ops_Override_Chat_Radius: true	#if ops can override the chat radius function and be able to hear everything
+	
+on load:
+	set {Global::Scripts::%name of script%} to {@Script_Priority}	#Priority of the script
+	set {Global::Scripts::%name of script%::Requests::*} to "Chat"	#What the script needs to work correctly
+	set {Global::Scripts::%name of script%::Fatal::*} to "Chat"		#It's better to disable the script if it doesn't have permission to manage these things
+
+
+
+on chat:
+	event is not cancelled
+	set chat format to "&7%player%: %message%"
+	if {@Enable_Chat_Raduis}:
+		if player is op:
+			set chat recipients to all players
+		else:
+			set chat recipients to all players in radius {@Chat_Raduis} of player
+			if {@Ops_Override_Chat_Radius}:
+				add all ops to chat recipients
+	
