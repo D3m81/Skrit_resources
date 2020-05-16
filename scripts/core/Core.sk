@@ -1,0 +1,54 @@
+on load:
+	wait 1 tick
+	loop {Global::Scripts::*}:
+		if script loop-index is not loaded:
+			delete {Global::Scripts::%loop-index%}
+			clear {Global::Scripts::%loop-index%::Requests::*}
+			clear {Global::Scripts::%loop-index%::Fatal::*}
+		else:
+			loop {Global::Scripts::%loop-index%::Requests::*}:
+				if {Managers::%loop-value-2%} is not set:
+					set {Managers::%loop-value-2%} to loop-index-1
+				else:
+					if loop-index-1 is not {Managers::%loop-value-2%}:
+						if loop-value-1 > {Global::Scripts::%{Managers::%loop-value-2%}%}:
+							set {Managers::%loop-value-2%} to loop-index-1
+							send "&eScript &6%loop-index-1% &ehas overridden &6%{Managers::%loop-value-2%}% &efor chat permissions, this may be unintended" to all ops
+	loop {Global::Scripts::*}:
+		loop {Global::Scripts::%loop-index%::Fatal::*}:
+			if {Managers::%loop-value-2%} is not loop-index-1:
+				disable script file loop-index-1
+				add loop-index-1 to {Global::Disabled_Scripts::*}
+				send "&cScript %loop-index-1% was disabled due to missing fatal permission, %loop-value-2%" to all ops
+				stop loop
+on unload:
+	clear {Managers::*}
+every 1 seconds:
+	set {_time} to difference between {Global::LastTpsCheck} and now
+	set {_t} to first element of split "%{_time}%" at " " parsed as number
+	set {_tps} to 20 / {_t}
+	set {Global::Tps} to {_tps}
+	set {Global::LastTpsCheck} to now
+command /tps:
+	trigger:
+		send "&7Current tps is: &e%{Global::Tps}%&7tps"
+		
+
+on chat:
+	event is not cancelled
+	if first character of message is "$":
+		if player is not op:
+			stop
+		cancel event
+		set {_args::*} to split message at " "
+		if {_args::1} is "$set":
+			set {%{_args::2}%} to {_args::3}
+			send "&7[&8Debug&7] set &f{%{_args::2}%}&7 to &f%{_args::3}%"
+		else if {_args::1} is "$delete":
+			delete {%{_args::2}%}
+			send "&7[&8Debug&7] deleted &f{%{_args::2}%}"
+		else if {_args::1} is "$clear":
+			clear {%{_args::2}%}
+			send "&7[&8Debug&7] cleared &f{%{_args::2}%}"
+		else:
+			send "&7[&8Debug&7] &cUnknown command"
